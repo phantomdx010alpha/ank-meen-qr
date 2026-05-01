@@ -938,8 +938,19 @@ async function shareQR() {
     const filename = `MB-QR-${lastQRData.amountDisplay || "open"}.png`;
     const file     = new File([blob], filename, { type: "image/png" });
 
+    const { amountDisplay: amt, bank } = lastQRData;
+    const cfg2  = BANKS[bank];
+    const upiId2 = typeof cfg2 === "string" ? cfg2 : cfg2.pa;
+    const amtLine = amt ? `₹${amt}` : "Open (payer enters amount)";
+    const caption =
+      `💳 *Payment Request — Meenakshi Buttons*\n\n` +
+      `Amount : *${amtLine}*\n` +
+      `Bank   : ${bank}\n` +
+      `UPI ID : ${upiId2}\n\n` +
+      `_Scan the QR code above with PhonePe, GPay, Paytm or any UPI app._`;
+
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "MB Payment QR" });
+      await navigator.share({ files: [file], title: "MB Payment QR", text: caption });
     } else {
       // Fallback: download
       _triggerDownload(blob, filename);
