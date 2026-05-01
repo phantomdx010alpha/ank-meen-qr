@@ -797,12 +797,12 @@ function buildComposedImage() {
     const upiId = typeof cfg === "string" ? cfg : cfg.pa;
 
     // Dimensions
-    const QR_SIZE  = 400;
-    const PAD      = 28;
-    const HDR_H    = 90;
-    const AMT_H    = 60;
-    const UPI_H    = 36;
-    const FOOT_H   = 30;
+    const QR_SIZE  = 320;
+    const PAD      = 32;
+    const HDR_H    = 110;
+    const AMT_H    = 70;
+    const UPI_H    = 50;
+    const FOOT_H   = 50;
     const W        = QR_SIZE + PAD * 2;
     const H        = HDR_H + QR_SIZE + AMT_H + UPI_H + FOOT_H + PAD * 2;
 
@@ -847,14 +847,16 @@ function buildComposedImage() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 22px serif";
-    ctx.fillText("Meenakshi Buttons", W / 2, HDR_H * 0.38);
+    ctx.font = "bold 26px serif";
+    ctx.fillText("Meenakshi Buttons", W / 2, HDR_H * 0.35);
 
     ctx.fillStyle = "#d4a843";
-    ctx.font = "500 11px sans-serif";
-    ctx.letterSpacing = "2px";
-    ctx.fillText("UPI PAYMENT", W / 2, HDR_H * 0.72);
-    ctx.letterSpacing = "0px";
+    ctx.font = "600 12px sans-serif";
+    ctx.fillText("UPI PAYMENT REQUEST", W / 2, HDR_H * 0.62);
+
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.font = "400 11px sans-serif";
+    ctx.fillText("Scan with PhonePe · GPay · Paytm · Any UPI App", W / 2, HDR_H * 0.83);
 
     // ── Draw QR from the hidden canvas
     const srcCanvas = document.querySelector("#qr-output canvas");
@@ -869,37 +871,59 @@ function buildComposedImage() {
     ctx.strokeRect(PAD, qrY, QR_SIZE, QR_SIZE);
 
     // ── Amount
-    const amtY = qrY + QR_SIZE + 10;
+    const amtY = qrY + QR_SIZE + 14;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     if (amountDisplay) {
-      ctx.font = "bold 36px serif";
-      ctx.fillStyle = "#0a1628";
-      ctx.fillText("₹" + amountDisplay, W / 2, amtY + AMT_H / 2);
-    } else {
-      ctx.font = "500 16px sans-serif";
+      // Amount label
+      ctx.font = "600 13px sans-serif";
       ctx.fillStyle = "#888888";
-      ctx.fillText("Amount: Enter when paying", W / 2, amtY + AMT_H / 2);
+      ctx.fillText("AMOUNT", W / 2, amtY + 14);
+      // Big amount
+      ctx.font = "bold 38px serif";
+      ctx.fillStyle = "#0a1628";
+      ctx.fillText("₹" + amountDisplay, W / 2, amtY + 50);
+    } else {
+      ctx.font = "600 13px sans-serif";
+      ctx.fillStyle = "#888888";
+      ctx.fillText("AMOUNT", W / 2, amtY + 14);
+      ctx.font = "500 18px sans-serif";
+      ctx.fillStyle = "#aaaaaa";
+      ctx.fillText("Enter when paying", W / 2, amtY + 50);
     }
 
     // ── UPI ID + Bank
     const upiY = amtY + AMT_H;
-    ctx.font = "500 13px sans-serif";
-    ctx.fillStyle = "#555555";
-    ctx.fillText(upiId, W / 2, upiY + 12);
 
-    ctx.font = "400 11px sans-serif";
-    ctx.fillStyle = "#999999";
-    ctx.fillText(bank, W / 2, upiY + 28);
+    // Divider line
+    ctx.strokeStyle = "#e8e8e8";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD, upiY);
+    ctx.lineTo(W - PAD, upiY);
+    ctx.stroke();
+
+    ctx.font = "600 13px sans-serif";
+    ctx.fillStyle = "#333333";
+    ctx.fillText(upiId, W / 2, upiY + 18);
+
+    ctx.font = "400 12px sans-serif";
+    ctx.fillStyle = "#888888";
+    ctx.fillText(bank, W / 2, upiY + 36);
 
     // ── Footer
     const footY = upiY + UPI_H;
-    ctx.fillStyle = "#f5f5f5";
+    ctx.fillStyle = "#0a1628";
     ctx.fillRect(0, footY, W, FOOT_H + PAD);
+
+    ctx.font = "500 12px sans-serif";
+    ctx.fillStyle = "#d4a843";
+    ctx.fillText("Meenakshi Buttons", W / 2, footY + 20);
+
     ctx.font = "400 10px sans-serif";
-    ctx.fillStyle = "#aaaaaa";
-    ctx.fillText("Scan with any UPI app  •  PhonePe / GPay / Paytm", W / 2, footY + (FOOT_H + PAD) / 2);
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.fillText("UPI · Secure Payment", W / 2, footY + 38);
 
     canvas.toBlob(blob => blob ? resolve(blob) : reject("toBlob failed"), "image/png");
   });
