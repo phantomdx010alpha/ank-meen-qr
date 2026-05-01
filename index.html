@@ -786,39 +786,140 @@ function closeFullscreen() {
   try { document.exitFullscreen?.(); } catch(_) {}
 }
 
-// ── GET QR AS BLOB (canvas → PNG blob) ────────────────────────────────────
-function getQRCanvas() {
-  return document.querySelector("#qr-output canvas");
+// ── BUILD COMPOSED QR IMAGE (like the original Python app) ────────────────
+// Returns a Promise<Blob> of a full PNG with header, QR, amount, UPI info
+function buildComposedImage() {
+  return new Promise((resolve, reject) => {
+    if (!lastQRData) return reject("No QR data");
+
+    const { amountDisplay, bank, upiUrl } = lastQRData;
+    const cfg   = BANKS[bank];
+    const upiId = typeof cfg === "string" ? cfg : cfg.pa;
+
+    // Dimensions
+    const QR_SIZE  = 400;
+    const PAD      = 28;
+    const HDR_H    = 90;
+    const AMT_H    = 60;
+    const UPI_H    = 36;
+    const FOOT_H   = 30;
+    const W        = QR_SIZE + PAD * 2;
+    const H        = HDR_H + QR_SIZE + AMT_H + UPI_H + FOOT_H + PAD * 2;
+
+    const canvas = document.createElement("canvas");
+    // 2× for high DPI / crisp on phone screens
+    const SCALE  = 2;
+    canvas.width  = W * SCALE;
+    canvas.height = H * SCALE;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(SCALE, SCALE);
+
+    // ── Background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+
+    // ── MB watermark
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.font = "bold 160px serif";
+    ctx.fillStyle = "#c8102e";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("MB", W / 2, H / 2);
+    ctx.restore();
+
+    // ── Header bar
+    const grad = ctx.createLinearGradient(0, 0, W, HDR_H);
+    grad.addColorStop(0, "#0a1628");
+    grad.addColorStop(1, "#1a3060");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, HDR_H);
+
+    // Red accent line at bottom of header
+    ctx.fillStyle = "#c8102e";
+    ctx.fillRect(0, HDR_H - 3, W, 3);
+
+    // Gold underline
+    ctx.fillStyle = "#d4a843";
+    ctx.fillRect(W / 2 - 30, HDR_H - 6, 60, 3);
+
+    // Header text
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px serif";
+    ctx.fillText("Meenakshi Buttons", W / 2, HDR_H * 0.38);
+
+    ctx.fillStyle = "#d4a843";
+    ctx.font = "500 11px sans-serif";
+    ctx.letterSpacing = "2px";
+    ctx.fillText("UPI PAYMENT", W / 2, HDR_H * 0.72);
+    ctx.letterSpacing = "0px";
+
+    // ── Draw QR from the hidden canvas
+    const srcCanvas = document.querySelector("#qr-output canvas");
+    if (!srcCanvas) return reject("QR canvas not found");
+
+    const qrY = HDR_H + PAD;
+    ctx.drawImage(srcCanvas, PAD, qrY, QR_SIZE, QR_SIZE);
+
+    // Thin border around QR
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(PAD, qrY, QR_SIZE, QR_SIZE);
+
+    // ── Amount
+    const amtY = qrY + QR_SIZE + 10;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (amountDisplay) {
+      ctx.font = "bold 36px serif";
+      ctx.fillStyle = "#0a1628";
+      ctx.fillText("₹" + amountDisplay, W / 2, amtY + AMT_H / 2);
+    } else {
+      ctx.font = "500 16px sans-serif";
+      ctx.fillStyle = "#888888";
+      ctx.fillText("Amount: Enter when paying", W / 2, amtY + AMT_H / 2);
+    }
+
+    // ── UPI ID + Bank
+    const upiY = amtY + AMT_H;
+    ctx.font = "500 13px sans-serif";
+    ctx.fillStyle = "#555555";
+    ctx.fillText(upiId, W / 2, upiY + 12);
+
+    ctx.font = "400 11px sans-serif";
+    ctx.fillStyle = "#999999";
+    ctx.fillText(bank, W / 2, upiY + 28);
+
+    // ── Footer
+    const footY = upiY + UPI_H;
+    ctx.fillStyle = "#f5f5f5";
+    ctx.fillRect(0, footY, W, FOOT_H + PAD);
+    ctx.font = "400 10px sans-serif";
+    ctx.fillStyle = "#aaaaaa";
+    ctx.fillText("Scan with any UPI app  •  PhonePe / GPay / Paytm", W / 2, footY + (FOOT_H + PAD) / 2);
+
+    canvas.toBlob(blob => blob ? resolve(blob) : reject("toBlob failed"), "image/png");
+  });
 }
 
-function canvasToBlob(canvas) {
-  return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-}
-
-// ── SHARE QR IMAGE (Web Share API → fallback download) ────────────────────
+// ── SHARE QR IMAGE ─────────────────────────────────────────────────────────
 async function shareQR() {
   if (!lastQRData) return;
-  const canvas = getQRCanvas();
-  if (!canvas) { showToast("Generate a QR first"); return; }
-
-  const { amountDisplay, bank } = lastQRData;
-  const filename = `MB-QR-${amountDisplay || "open"}.png`;
-
+  showToast("Preparing image…");
   try {
-    const blob = await canvasToBlob(canvas);
-    const file = new File([blob], filename, { type: "image/png" });
+    const blob     = await buildComposedImage();
+    const filename = `MB-QR-${lastQRData.amountDisplay || "open"}.png`;
+    const file     = new File([blob], filename, { type: "image/png" });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      // Native share sheet — picks WhatsApp, Telegram, email, etc.
-      await navigator.share({
-        files: [file],
-        title: "MB Payment QR",
-        text: `Pay ${amountDisplay ? "₹" + amountDisplay : "(open amount)"} — Meenakshi Buttons`
-      });
+      await navigator.share({ files: [file], title: "MB Payment QR" });
     } else {
-      // Fallback: just download
-      downloadQR();
-      showToast("Share not supported — image saved instead");
+      // Fallback: download
+      _triggerDownload(blob, filename);
+      showToast("Saved — share from gallery");
     }
   } catch (err) {
     if (err.name !== "AbortError") showToast("Could not share — try Save Image");
@@ -828,20 +929,24 @@ async function shareQR() {
 // ── DOWNLOAD QR AS PNG ────────────────────────────────────────────────────
 async function downloadQR() {
   if (!lastQRData) return;
-  const canvas = getQRCanvas();
-  if (!canvas) { showToast("Generate a QR first"); return; }
+  showToast("Saving…");
+  try {
+    const blob     = await buildComposedImage();
+    const filename = `MB-QR-${lastQRData.amountDisplay || "open"}-${lastQRData.bank.replace(/[^a-z0-9]/gi,"_")}.png`;
+    _triggerDownload(blob, filename);
+    showToast("✅ QR saved to gallery!");
+  } catch (err) {
+    showToast("Could not save image");
+  }
+}
 
-  const { amountDisplay, bank } = lastQRData;
-  const filename = `MB-QR-${amountDisplay || "open"}-${bank.replace(/[^a-z0-9]/gi,"_")}.png`;
-
-  const blob = await canvasToBlob(canvas);
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href     = url;
+function _triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement("a");
+  a.href    = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-  showToast("✅ QR saved to gallery!");
 }
 
 // ── TOAST ──────────────────────────────────────────────────────────────────
