@@ -358,9 +358,9 @@
     /* ── ACTION BUTTONS ── */
     .action-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 0 20px 20px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 0 16px 20px;
     }
 
     .btn-action {
@@ -389,6 +389,13 @@
       color: #25d366;
     }
     .btn-whatsapp:active { background: rgba(37, 211, 102, 0.18); }
+
+    .btn-download {
+      border-color: rgba(100, 160, 255, 0.4);
+      background: rgba(100, 160, 255, 0.08);
+      color: #6aaeff;
+    }
+    .btn-download:active { background: rgba(100, 160, 255, 0.18); }
 
     .btn-fullscreen {
       border-color: rgba(212, 168, 67, 0.4);
@@ -596,8 +603,11 @@
       </div>
     </div>
     <div class="action-row">
-      <button class="btn-action btn-whatsapp" onclick="shareWhatsApp()">
-        <span class="icon">💬</span>WhatsApp
+      <button class="btn-action btn-whatsapp" onclick="shareQR()">
+        <span class="icon">📤</span>Share QR
+      </button>
+      <button class="btn-action btn-download" onclick="downloadQR()">
+        <span class="icon">💾</span>Save Image
       </button>
       <button class="btn-action btn-fullscreen" onclick="openFullscreen()">
         <span class="icon">⛶</span>Full Screen
@@ -776,23 +786,62 @@ function closeFullscreen() {
   try { document.exitFullscreen?.(); } catch(_) {}
 }
 
-// ── WHATSAPP SHARE ─────────────────────────────────────────────────────────
-function shareWhatsApp() {
+// ── GET QR AS BLOB (canvas → PNG blob) ────────────────────────────────────
+function getQRCanvas() {
+  return document.querySelector("#qr-output canvas");
+}
+
+function canvasToBlob(canvas) {
+  return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+}
+
+// ── SHARE QR IMAGE (Web Share API → fallback download) ────────────────────
+async function shareQR() {
   if (!lastQRData) return;
+  const canvas = getQRCanvas();
+  if (!canvas) { showToast("Generate a QR first"); return; }
+
   const { amountDisplay, bank } = lastQRData;
-  const cfg = BANKS[bank];
-  const upiId = typeof cfg === "string" ? cfg : cfg.pa;
+  const filename = `MB-QR-${amountDisplay || "open"}.png`;
 
-  const amtText = amountDisplay ? `*₹${amountDisplay}*` : "_(open amount — payer enters)_";
-  const msg =
-    `💳 *Payment Request — Meenakshi Buttons*\n\n` +
-    `Amount : ${amtText}\n` +
-    `Bank   : ${bank}\n` +
-    `UPI ID : ${upiId}\n\n` +
-    `_Please scan the QR code shared separately or pay directly to the UPI ID above._`;
+  try {
+    const blob = await canvasToBlob(canvas);
+    const file = new File([blob], filename, { type: "image/png" });
 
-  const encoded = encodeURIComponent(msg);
-  window.open(`https://wa.me/?text=${encoded}`, "_blank");
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      // Native share sheet — picks WhatsApp, Telegram, email, etc.
+      await navigator.share({
+        files: [file],
+        title: "MB Payment QR",
+        text: `Pay ${amountDisplay ? "₹" + amountDisplay : "(open amount)"} — Meenakshi Buttons`
+      });
+    } else {
+      // Fallback: just download
+      downloadQR();
+      showToast("Share not supported — image saved instead");
+    }
+  } catch (err) {
+    if (err.name !== "AbortError") showToast("Could not share — try Save Image");
+  }
+}
+
+// ── DOWNLOAD QR AS PNG ────────────────────────────────────────────────────
+async function downloadQR() {
+  if (!lastQRData) return;
+  const canvas = getQRCanvas();
+  if (!canvas) { showToast("Generate a QR first"); return; }
+
+  const { amountDisplay, bank } = lastQRData;
+  const filename = `MB-QR-${amountDisplay || "open"}-${bank.replace(/[^a-z0-9]/gi,"_")}.png`;
+
+  const blob = await canvasToBlob(canvas);
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("✅ QR saved to gallery!");
 }
 
 // ── TOAST ──────────────────────────────────────────────────────────────────
