@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="MB QR Pay" />
   <title>MB QR Pay</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -537,6 +539,50 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* ── iOS INSTALL BANNER ── */
+    .ios-install-banner {
+      display: none;
+      width: min(420px, 94vw);
+      margin-top: 16px;
+      background: linear-gradient(135deg, rgba(212,168,67,0.14), rgba(212,168,67,0.07));
+      border: 1px solid rgba(212,168,67,0.35);
+      border-radius: 14px;
+      padding: 14px 16px;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ios-install-banner.visible { display: flex; }
+    .ios-banner-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ios-banner-top .icon { font-size: 22px; flex-shrink: 0; }
+    .ios-banner-top p { font-size: 12px; color: var(--gold); flex: 1; line-height: 1.5; }
+    .ios-banner-top button {
+      background: transparent;
+      border: none;
+      color: var(--grey);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .ios-steps {
+      font-size: 11.5px;
+      color: rgba(212,168,67,0.8);
+      line-height: 1.8;
+      padding-left: 4px;
+    }
+    .ios-steps span {
+      display: inline-block;
+      background: rgba(212,168,67,0.15);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin: 0 2px;
+      font-weight: 600;
+    }
+
     /* scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -551,11 +597,25 @@
     <div class="tagline">UPI Payment QR Generator</div>
   </header>
 
-  <!-- Install Banner -->
+  <!-- Install Banner (Android/Chrome) -->
   <div class="install-banner" id="installBanner">
     <div class="icon">📲</div>
     <p>Add to home screen for offline use</p>
     <button class="btn-install" id="installBtn">Install</button>
+  </div>
+
+  <!-- iOS Install Banner (Safari) -->
+  <div class="ios-install-banner" id="iosInstallBanner">
+    <div class="ios-banner-top">
+      <div class="icon">📲</div>
+      <p><strong style="color:var(--gold)">Add to Home Screen</strong> for offline use</p>
+      <button onclick="document.getElementById('iosInstallBanner').classList.remove('visible')">✕</button>
+    </div>
+    <div class="ios-steps">
+      1. Tap <span>⎙ Share</span> at the bottom of Safari<br>
+      2. Scroll down and tap <span>Add to Home Screen</span><br>
+      3. Tap <span>Add</span> — done! 🎉
+    </div>
   </div>
 
   <!-- Main Form Card -->
@@ -976,12 +1036,30 @@ async function downloadQR() {
 }
 
 function _triggerDownload(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a   = document.createElement("a");
-  a.href    = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) {
+    // iOS Safari blocks <a download> — open image in new tab so user can long-press → Save to Photos
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+    if (!win) {
+      // popup blocked fallback: overlay image in page
+      const img = document.createElement("img");
+      img.src = url;
+      img.style.cssText = "position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:9999;cursor:pointer";
+      img.title = "Long press → Save to Photos";
+      img.onclick = () => document.body.removeChild(img);
+      document.body.appendChild(img);
+    }
+    showToast("Long-press the image → Save to Photos", 4000);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement("a");
+    a.href    = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 }
 
 // ── TOAST ──────────────────────────────────────────────────────────────────
@@ -994,6 +1072,8 @@ function showToast(msg, duration = 2500) {
 
 // ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
 let deferredPrompt = null;
+
+// Android/Chrome: native install prompt
 window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   deferredPrompt = e;
@@ -1012,6 +1092,20 @@ document.getElementById("installBtn").addEventListener("click", async () => {
 window.addEventListener("appinstalled", () => {
   document.getElementById("installBanner").classList.remove("visible");
 });
+
+// iOS Safari: no beforeinstallprompt — show manual instructions banner
+(function() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isInStandaloneMode = window.navigator.standalone === true;
+  const dismissed = sessionStorage.getItem("iosBannerDismissed");
+  if (isIOS && !isInStandaloneMode && !dismissed) {
+    document.getElementById("iosInstallBanner").classList.add("visible");
+    // Hide when user dismisses
+    document.querySelector("#iosInstallBanner button").addEventListener("click", () => {
+      sessionStorage.setItem("iosBannerDismissed", "1");
+    });
+  }
+})();
 
 // ── SERVICE WORKER REGISTRATION ────────────────────────────────────────────
 if ("serviceWorker" in navigator) {
