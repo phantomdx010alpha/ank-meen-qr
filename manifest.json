@@ -4,8 +4,8 @@
   "description": "UPI QR Code Generator for Meenakshi Buttons",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a1628",
-  "theme_color": "#0a1628",
+  "background_color": "#060b17",
+  "theme_color": "#060b17",
   "orientation": "portrait-primary",
   "icons": [
     {

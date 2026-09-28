@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a1628" />
+  <meta name="theme-color" content="#060b17" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="MB QR Pay" />
@@ -17,11 +17,11 @@
 
   <style>
     :root {
-      --navy:       #0a1628;
+      --navy:       #060b17;
       --navy-mid:   #112040;
       --navy-light: #1a3060;
-      --red:        #c8102e;
-      --red-light:  #e8192e;
+      --red:        #14b8a6;
+      --red-light:  #2dd4bf;
       --gold:       #d4a843;
       --white:      #f5f0eb;
       --grey:       #8a9ab5;
@@ -47,7 +47,7 @@
       font-family: 'Playfair Display', serif;
       font-size: clamp(60px, 10vw, 120px);
       font-weight: 900;
-      color: rgba(200, 16, 46, 0.045);
+      color: rgba(20, 184, 166, 0.045);
       letter-spacing: 0.3em;
       line-height: 1.6;
       transform: rotate(-25deg);
@@ -177,8 +177,8 @@
     .bank-tab:active { transform: scale(0.98); }
     .bank-tab.active {
       border-color: var(--red);
-      background: rgba(200, 16, 46, 0.12);
-      box-shadow: 0 0 0 1px rgba(200,16,46,0.3);
+      background: rgba(20, 184, 166, 0.12);
+      box-shadow: 0 0 0 1px rgba(20,184,166,0.3);
     }
 
     .bank-dot {
@@ -192,7 +192,7 @@
     .bank-tab.active .bank-dot {
       border-color: var(--red);
       background: var(--red);
-      box-shadow: 0 0 0 3px rgba(200,16,46,0.25);
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.25);
     }
     .bank-tab.active .bank-dot::after {
       content: '';
@@ -219,7 +219,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .bank-tab.active .bank-name { color: #ff6b7a; }
+    .bank-tab.active .bank-name { color: #5eead4; }
 
     /* ── AMOUNT INPUT ── */
     .amount-wrap {
@@ -257,7 +257,7 @@
     .amount-input::placeholder { color: rgba(255,255,255,0.2); font-size: 18px; }
     .amount-input:focus {
       border-color: var(--red);
-      box-shadow: 0 0 0 3px rgba(200,16,46,0.2);
+      box-shadow: 0 0 0 3px rgba(20,184,166,0.2);
     }
 
     /* ── GENERATE BUTTON ── */
@@ -274,10 +274,10 @@
       letter-spacing: 0.05em;
       cursor: pointer;
       transition: all 0.2s;
-      box-shadow: 0 6px 24px rgba(200,16,46,0.4);
+      box-shadow: 0 6px 24px rgba(20,184,166,0.4);
       -webkit-tap-highlight-color: transparent;
     }
-    .btn-generate:active { transform: scale(0.98); box-shadow: 0 2px 12px rgba(200,16,46,0.3); }
+    .btn-generate:active { transform: scale(0.98); box-shadow: 0 2px 12px rgba(20,184,166,0.3); }
     .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* ── QR RESULT CARD ── */
@@ -337,7 +337,7 @@
       font-family: 'Playfair Display', serif;
       font-size: 80px;
       font-weight: 900;
-      color: rgba(200, 16, 46, 0.06);
+      color: rgba(20, 184, 166, 0.06);
       pointer-events: none;
       z-index: 1;
       border-radius: 12px;
@@ -465,7 +465,7 @@
       font-family: 'Playfair Display', serif;
       font-size: 120px;
       font-weight: 900;
-      color: rgba(200, 16, 46, 0.05);
+      color: rgba(20, 184, 166, 0.05);
       pointer-events: none;
       z-index: 1;
     }
@@ -587,7 +587,28 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 4px; }
-  </style>
+  
+    /* ── SLEEK THEME OVERRIDES ── */
+    :root{--navy:#060b17;--navy-mid:#0e1730;--navy-light:#18264a;--gold:#f5c26b;--grey:#8b98b8;--card-bg:rgba(14,23,48,.72)}
+    body{background:radial-gradient(1200px 600px at 50% -10%,#12234d 0%,#060b17 60%) fixed!important}
+    .card,.qr-card{border:1px solid rgba(255,255,255,.08)!important;border-radius:20px!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.35)!important}
+    .bank-tab{border-radius:14px!important;transition:all .2s}
+    .bank-tab.active{border-color:#14b8a6!important;box-shadow:0 0 0 1px rgba(20,184,166,.5),0 6px 20px rgba(20,184,166,.15)}
+    .btn-generate{background:linear-gradient(135deg,#14b8a6,#0ea5e9)!important;color:#04121a!important;border-radius:14px!important;font-weight:700;box-shadow:0 8px 24px rgba(20,184,166,.3)!important}
+    .amount-input:focus{border-color:#14b8a6!important}
+    /* ── BANK ACCOUNT (P2P) SWITCH ── */
+    .p2p-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-bottom:16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+    .p2p-title{font-size:14px;font-weight:600;color:var(--white)}
+    .p2p-sub{font-size:11px;color:var(--grey);margin-top:2px}
+    .p2p-row.on{border-color:rgba(245,194,107,.5);background:rgba(245,194,107,.07)}
+    .p2p-row.on .p2p-sub{color:var(--gold)}
+    .switch{position:relative;width:48px;height:28px;flex:none}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#2a3757;border-radius:28px;cursor:pointer;transition:.25s}
+    .slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s}
+    .switch input:checked+.slider{background:#14b8a6}
+    .switch input:checked+.slider:before{transform:translateX(20px)}
+</style>
 </head>
 <body>
 <div class="app">
@@ -622,6 +643,14 @@
   <div class="card">
     <div class="card-header">Select Bank & Amount</div>
     <div class="card-body">
+
+      <div class="p2p-row" id="p2pRow">
+        <div>
+          <div class="p2p-title">Pay to bank account</div>
+          <div class="p2p-sub" id="p2pSub">Off · QR uses the UPI ID</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="p2pSwitch" onchange="setP2P(this.checked)"><span class="slider"></span></label>
+      </div>
 
       <div class="field-label">Bank Account</div>
       <div class="bank-tabs" id="bankTabs">
@@ -717,18 +746,48 @@ const BANKS = {
 
 const DEFAULT_BANK = "Kotak Mahindra (Merchant)";
 
+// Bank account + IFSC, used when "Pay to bank account" is ON (QR = account@IFSC.ifsc.npci)
+const ACCOUNTS = {
+  "Kotak Mahindra (Merchant)": { account: "112011011564", ifsc: "KKBK0008048" },
+  "SBI":                       { account: "54047475538",  ifsc: "SBIN0040015" }
+};
+
 // ── STATE ──────────────────────────────────────────────────────────────────
+let p2pMode      = localStorage.getItem("p2pMode") === "1";   // remembered per device
 let selectedBank = localStorage.getItem("lastBank") || DEFAULT_BANK;
+if (!BANKS[selectedBank] || (p2pMode && !ACCOUNTS[selectedBank])) selectedBank = DEFAULT_BANK;
 let lastQRData   = null; // store UPI URL for WhatsApp share
 let qrInstance   = null;
 let qrFSInstance = null;
+
+// ── P2P / BANK-ACCOUNT MODE ────────────────────────────────────────────────
+function payeeDisplay(name) {
+  if (p2pMode && ACCOUNTS[name]) { const a = ACCOUNTS[name]; return `A/C ••••${a.account.slice(-4)} · ${a.ifsc}`; }
+  const cfg = BANKS[name]; return typeof cfg === "string" ? cfg : cfg.pa;
+}
+function visibleBanks() { return Object.entries(BANKS).filter(([n]) => !p2pMode || ACCOUNTS[n]); }
+function syncP2PUI() {
+  document.getElementById("p2pSwitch").checked = p2pMode;
+  document.getElementById("p2pRow").classList.toggle("on", p2pMode);
+  document.getElementById("p2pSub").textContent = p2pMode
+    ? "On · QR uses account number + IFSC" : "Off · QR uses the UPI ID";
+}
+function setP2P(on) {
+  p2pMode = !!on;
+  localStorage.setItem("p2pMode", p2pMode ? "1" : "0");
+  if (p2pMode && !ACCOUNTS[selectedBank]) { selectedBank = DEFAULT_BANK; localStorage.setItem("lastBank", selectedBank); }
+  document.getElementById("qrCard").classList.remove("visible"); // old QR is stale
+  lastQRData = null;
+  syncP2PUI(); renderBanks();
+  showToast(p2pMode ? "Bank account mode on" : "UPI ID mode on");
+}
 
 // ── RENDER BANK TABS ───────────────────────────────────────────────────────
 function renderBanks() {
   const container = document.getElementById("bankTabs");
   container.innerHTML = "";
-  Object.entries(BANKS).forEach(([name, cfg]) => {
-    const upiId = typeof cfg === "string" ? cfg : cfg.pa;
+  visibleBanks().forEach(([name]) => {
+    const upiId = payeeDisplay(name);
     const div = document.createElement("div");
     div.className = "bank-tab" + (name === selectedBank ? " active" : "");
     div.innerHTML = `
@@ -741,10 +800,17 @@ function renderBanks() {
     container.appendChild(div);
   });
 }
+syncP2PUI();
 renderBanks();
 
 // ── BUILD UPI URL (matches original logic exactly) ─────────────────────────
 function buildUpiUrl(bankName, amountDisplay) {
+  if (p2pMode && ACCOUNTS[bankName]) {
+    const a = ACCOUNTS[bankName];
+    let u = `upi://pay?pa=${a.account}@${a.ifsc}.ifsc.npci&pn=${encodeURIComponent(RECIPIENT)}`;
+    if (amountDisplay) u += `&am=${amountDisplay}`;
+    return u + `&cu=INR`;
+  }
   const cfg = BANKS[bankName];
   const isMerchant = typeof cfg === "object" && cfg.type === "merchant";
   const pn = encodeURIComponent(RECIPIENT);
@@ -780,7 +846,7 @@ function generateQR() {
   lastQRData = { upiUrl, amountDisplay, bank: selectedBank };
 
   const cfg = BANKS[selectedBank];
-  const upiId = typeof cfg === "string" ? cfg : cfg.pa;
+  const upiId = payeeDisplay(selectedBank);
 
   // Update labels
   document.getElementById("qrAmountLabel").textContent =
@@ -795,7 +861,7 @@ function generateQR() {
     text:           upiUrl,
     width:          220,
     height:         220,
-    colorDark:      "#0a1628",
+    colorDark:      "#060b17",
     colorLight:     "#ffffff",
     correctLevel:   QRCode.CorrectLevel.H
   });
@@ -831,7 +897,7 @@ function openFullscreen() {
     text:         upiUrl,
     width:        size,
     height:       size,
-    colorDark:    "#0a1628",
+    colorDark:    "#060b17",
     colorLight:   "#ffffff",
     correctLevel: QRCode.CorrectLevel.H
   });
@@ -854,7 +920,7 @@ function buildComposedImage() {
 
     const { amountDisplay, bank, upiUrl } = lastQRData;
     const cfg   = BANKS[bank];
-    const upiId = typeof cfg === "string" ? cfg : cfg.pa;
+    const upiId = payeeDisplay(bank);
 
     // Dimensions
     const QR_SIZE  = 320;
@@ -882,7 +948,7 @@ function buildComposedImage() {
     ctx.save();
     ctx.globalAlpha = 0.04;
     ctx.font = "bold 160px serif";
-    ctx.fillStyle = "#c8102e";
+    ctx.fillStyle = "#14b8a6";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("MB", W / 2, H / 2);
@@ -890,13 +956,13 @@ function buildComposedImage() {
 
     // ── Header bar
     const grad = ctx.createLinearGradient(0, 0, W, HDR_H);
-    grad.addColorStop(0, "#0a1628");
+    grad.addColorStop(0, "#060b17");
     grad.addColorStop(1, "#1a3060");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, HDR_H);
 
     // Red accent line at bottom of header
-    ctx.fillStyle = "#c8102e";
+    ctx.fillStyle = "#14b8a6";
     ctx.fillRect(0, HDR_H - 3, W, 3);
 
     // Gold underline
@@ -942,7 +1008,7 @@ function buildComposedImage() {
       ctx.fillText("AMOUNT", W / 2, amtY + 14);
       // Big amount
       ctx.font = "bold 38px serif";
-      ctx.fillStyle = "#0a1628";
+      ctx.fillStyle = "#060b17";
       ctx.fillText("₹" + amountDisplay, W / 2, amtY + 50);
     } else {
       ctx.font = "600 13px sans-serif";
@@ -974,7 +1040,7 @@ function buildComposedImage() {
 
     // ── Footer
     const footY = upiY + UPI_H;
-    ctx.fillStyle = "#0a1628";
+    ctx.fillStyle = "#060b17";
     ctx.fillRect(0, footY, W, FOOT_H + PAD);
 
     ctx.font = "500 12px sans-serif";
@@ -1000,7 +1066,7 @@ async function shareQR() {
 
     const { amountDisplay: amt, bank } = lastQRData;
     const cfg2  = BANKS[bank];
-    const upiId2 = typeof cfg2 === "string" ? cfg2 : cfg2.pa;
+    const upiId2 = payeeDisplay(bank);
     const amtLine = amt ? `₹${amt}` : "Open (payer enters amount)";
     const caption =
       `💳 *Payment Request — Meenakshi Buttons*\n\n` +
