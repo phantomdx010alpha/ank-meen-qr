@@ -762,7 +762,7 @@ let qrFSInstance = null;
 
 // ── P2P / BANK-ACCOUNT MODE ────────────────────────────────────────────────
 function payeeDisplay(name) {
-  if (p2pMode && ACCOUNTS[name]) { const a = ACCOUNTS[name]; return `A/C ••••${a.account.slice(-4)} · ${a.ifsc}`; }
+  if (p2pMode && ACCOUNTS[name]) { const a = ACCOUNTS[name]; return `A/C ${a.account} · ${a.ifsc}`; }
   const cfg = BANKS[name]; return typeof cfg === "string" ? cfg : cfg.pa;
 }
 function visibleBanks() { return Object.entries(BANKS).filter(([n]) => !p2pMode || ACCOUNTS[n]); }
