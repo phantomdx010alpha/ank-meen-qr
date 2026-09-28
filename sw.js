@@ -1,5 +1,5 @@
 // MB QR Pay — Service Worker
-const CACHE_NAME = "mb-qr-v6";
+const CACHE_NAME = "mb-qr-v7";
 
 // Install: cache core assets, skip waiting so new SW activates immediately
 self.addEventListener("install", event => {
